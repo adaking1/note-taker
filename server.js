@@ -66,6 +66,21 @@ app.post('/api/notes', (req, res) => {
     }
 });
 
+app.delete('/api/notes/:id', (req, res) => {
+    fs.readFile('./db/db.json', (err, data) => {
+        if (err) {
+            res.errored(err);
+        }
+        else {
+            let notes = JSON.parse(data);
+            const {id} = req.params;
+            console.log(id);
+            notes = notes.filter((note) => note.id !== id);
+            console.log(notes);
+        }
+    })
+});
+
 app.listen(PORT, () => {
     console.log(`http://localhost:${PORT}`);
-})
+});
