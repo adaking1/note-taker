@@ -3,6 +3,7 @@ const path = require('path');
 const fsp = require('fs/promises');
 const fs = require('fs');
 const {v4: uuid} = require('uuid');
+const db = './db/db.json';
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -29,7 +30,7 @@ app.get('/notes', (req, res) => {
 
 // api routes
 app.get('/api/notes', (req, res) => {
-    fsp.readFile('./db/db.json')
+    fsp.readFile(db)
     .then((data) =>  {
         res.json(JSON.parse(data));
     });
@@ -42,20 +43,20 @@ app.post('/api/notes', (req, res) => {
         // const notes = [];
         const newNote = {title, text, "id":uuid()};
 
-        fs.readFile('./db/db.json', (err, data) => {
+        fs.readFile(db, (err, data) => {
             if (err) {
                 console.log("error");
                 res.errored(err);
             }
             else if (!data.includes("title")) {
-                fsp.writeFile('./db/db.json', JSON.stringify([newNote]));
+                fsp.writeFile(db, JSON.stringify([newNote]));
                 res.json("new file");
             }
             else {
-                const db = JSON.parse(data);
-                        db.push(newNote);
-                        console.log(db);
-                        fsp.writeFile('./db/db.json', JSON.stringify(db));
+                const database = JSON.parse(data);
+                        database.push(newNote);
+                        console.log(database);
+                        fsp.writeFile(db, JSON.stringify(database));
                         res.json('Success');
             }
         })  
@@ -67,7 +68,7 @@ app.post('/api/notes', (req, res) => {
 });
 
 app.delete('/api/notes/:id', (req, res) => {
-    fs.readFile('./db/db.json', (err, data) => {
+    fs.readFile(db, (err, data) => {
         if (err) {
             res.errored(err);
         }
