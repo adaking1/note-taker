@@ -32,7 +32,12 @@ app.get('/notes', (req, res) => {
 app.get('/api/notes', (req, res) => {
     fsp.readFile(db)
     .then((data) =>  {
-        res.json(JSON.parse(data));
+        if (!data.includes("title")) {
+            res.json("");
+        }
+        else {
+            res.json(JSON.parse(data));
+        }        
     });
 });
 
