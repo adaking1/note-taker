@@ -14,10 +14,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // html routes
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'public/index.html'))
-// });
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'))
 });
@@ -28,12 +24,14 @@ app.get('/notes', (req, res) => {
 
 
 
+
+
 // api routes
 app.get('/api/notes', (req, res) => {
     fsp.readFile(db)
     .then((data) =>  {
-        if (!data.includes("title")) {
-            res.json("");
+        if (!data.includes('id')) {
+            res.json([]);
         }
         else {
             res.json(JSON.parse(data));
@@ -45,24 +43,21 @@ app.post('/api/notes', (req, res) => {
 
     if (req.body) {
         const {title, text} = req.body;
-        // const notes = [];
-        const newNote = {title, text, "id":uuid()};
+        const newNote = {title, text, 'id':uuid()};
 
         fs.readFile(db, (err, data) => {
             if (err) {
-                console.log("error");
-                res.errored(err);
+                res.errored('Error');
             }
-            else if (!data.includes("title")) {
+            else if (!data.includes('id')) {
                 fsp.writeFile(db, JSON.stringify([newNote]));
-                res.json("new file");
+                res.json('new file');
             }
             else {
                 const database = JSON.parse(data);
-                        database.push(newNote);
-                        console.log(database);
-                        fsp.writeFile(db, JSON.stringify(database));
-                        res.json('Success');
+                database.push(newNote);
+                fsp.writeFile(db, JSON.stringify(database));
+                res.json('Note added');
             }
         })  
         
@@ -80,11 +75,15 @@ app.delete('/api/notes/:id', (req, res) => {
         else {
             let notes = JSON.parse(data);
             const {id} = req.params;
-            console.log(id);
             notes = notes.filter((note) => note.id !== id);
-            console.log(notes);
+            fsp.writeFile(db, JSON.stringify(notes));
+            res.json('Note deleted');
         }
     })
+});
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index.html'))
 });
 
 app.listen(PORT, () => {
