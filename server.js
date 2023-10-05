@@ -22,10 +22,6 @@ app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/notes.html'))
 });
 
-
-
-
-
 // api routes
 app.get('/api/notes', (req, res) => {
     fsp.readFile(db)
@@ -89,3 +85,10 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log(`http://localhost:${PORT}`);
 });
+
+
+
+
+// add comments
+// make and add readme
+// try to modularize
