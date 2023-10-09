@@ -1,94 +1,35 @@
 const express = require('express');
 const path = require('path');
-const fsp = require('fs/promises');
-const fs = require('fs');
-const {v4: uuid} = require('uuid');
-const db = './db/db.json';
+const api = require('./routes/notes');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
 
-
+// these two lines are middleware for parsing JSON and url-endcoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
 
-// html routes
+// this is middleware for accessing the static files in the 'public' folder
+app.use(express.static('public'));
+// this is middleware that grants access to the 'notes' file in the 'routes' folder
+app.use('/api', api);
+
+// html GET route for the homepage (index.html)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'))
 });
 
+// html GET route for the notes page (notes.html)
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/notes.html'))
 });
 
-// api routes
-app.get('/api/notes', (req, res) => {
-    fsp.readFile(db)
-    .then((data) =>  {
-        if (!data.includes('id')) {
-            res.json([]);
-        }
-        else {
-            res.json(JSON.parse(data));
-        }        
-    });
-});
-
-app.post('/api/notes', (req, res) => {
-
-    if (req.body) {
-        const {title, text} = req.body;
-        const newNote = {title, text, 'id':uuid()};
-
-        fs.readFile(db, (err, data) => {
-            if (err) {
-                res.errored('Error');
-            }
-            else if (!data.includes('id')) {
-                fsp.writeFile(db, JSON.stringify([newNote]));
-                res.json('new file');
-            }
-            else {
-                const database = JSON.parse(data);
-                database.push(newNote);
-                fsp.writeFile(db, JSON.stringify(database));
-                res.json('Note added');
-            }
-        })  
-        
-    }
-    else {
-        res.errored('Error');
-    }
-});
-
-app.delete('/api/notes/:id', (req, res) => {
-    fs.readFile(db, (err, data) => {
-        if (err) {
-            res.errored(err);
-        }
-        else {
-            let notes = JSON.parse(data);
-            const {id} = req.params;
-            notes = notes.filter((note) => note.id !== id);
-            fsp.writeFile(db, JSON.stringify(notes));
-            res.json('Note deleted');
-        }
-    })
-});
-
+// html GET route for any path not listed in the above html GET routes
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'))
 });
 
+// this is the eventListener that is listening for api calls on the user's port
 app.listen(PORT, () => {
     console.log(`http://localhost:${PORT}`);
 });
-
-
-
-
-// add comments
-// make and add readme
-// try to modularize
